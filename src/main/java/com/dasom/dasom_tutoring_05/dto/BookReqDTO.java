@@ -1,6 +1,6 @@
 package com.dasom.dasom_tutoring_05.dto;
 
-public class BookReqDTO extends BaseDTO {
+public class BookReqDTO {
     private String title;
     private String author;
     private Integer price;

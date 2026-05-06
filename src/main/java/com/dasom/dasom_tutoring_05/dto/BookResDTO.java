@@ -9,12 +9,12 @@ public class BookResDTO extends BaseDTO {
     private Integer price;
 
 
-    public BookResDTO(Long id, String title, String author, Integer price, LocalDateTime createdAt) {
+    public BookResDTO(Long id, LocalDateTime createdAt, String title, String author, Integer price) {
         this.id = id;
+        this.createdAt = createdAt;
         this.title = title;
         this.author = author;
         this.price = price;
-        this.createdAt = createdAt;
     }
 
     public Long getId() {
