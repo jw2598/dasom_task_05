@@ -1,80 +1,101 @@
 package com.dasom.dasom_tutoring_05.service;
 
+import com.dasom.dasom_tutoring_05.dto.BaseDTO;
 import com.dasom.dasom_tutoring_05.dto.BookReqDTO;
 import com.dasom.dasom_tutoring_05.dto.BookResDTO;
 import com.dasom.dasom_tutoring_05.dto.MessageResDTO;
+import com.dasom.dasom_tutoring_05.entity.Book;
+import com.dasom.dasom_tutoring_05.repository.BookRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.Optional;
 
 @Service
 public class BookServiceImpl implements BookService {
+    private final BookRepository bookRepository;
 
-    private final List<BookResDTO> bookStorage = new ArrayList<>();
-
-    private final AtomicLong idGenerator = new AtomicLong(1);
+    public BookServiceImpl(BookRepository bookRepository){
+        this.bookRepository = bookRepository;
+    }
 
     @Override
     public MessageResDTO registerBook(BookReqDTO reqDTO) {
-        Long newId = idGenerator.getAndIncrement();
+        Book book = new Book();
+        book.setTitle(reqDTO.getTitle());
+        book.setAuthor(reqDTO.getAuthor());
+        book.setPrice(reqDTO.getPrice());
+        book.setStatus(reqDTO.getStatus());
 
-        BookResDTO newBook = new BookResDTO(
-                newId, LocalDateTime.now(),
-                reqDTO.getTitle(),
-                reqDTO.getAuthor(),
-                reqDTO.getPrice()
-        );
-        bookStorage.add(newBook);
+        bookRepository.save(book);
 
-        System.out.println("도서 등록: "+reqDTO.getAuthor());
-        System.out.println("도서 등록: "+reqDTO.getTitle());
         return new MessageResDTO("도서 등록 완료", LocalDateTime.now());
     }
 
     @Override
     public List<BookResDTO> getAllBooks() {
-        List<BookResDTO> books = new ArrayList<>();
-        books.add(new BookResDTO(1L, LocalDateTime.now(), "도서1", "작가1", 10000));
-        books.add(new BookResDTO(2L, LocalDateTime.now(), "도서2", "작가2", 20000));
-        books.add(new BookResDTO(3L, LocalDateTime.now(), "도서3", "작가3", 30000));
-        books.add(new BookResDTO(4L, LocalDateTime.now(), "도서4", "작가4", 40000));
-        return books;    }
+        List<Book> books = bookRepository.findAll();
+        List<BookResDTO> responseList = new ArrayList<>();
+        for (Book book : books) {
+            BookResDTO dto = new BookResDTO(
+                    book.getId(),
+                    book.getTitle(),
+                    book.getAuthor(),
+                    book.getPrice(),
+                    book.getStatus(),
+                    book.getCreatedAt()
+            );
+            responseList.add(dto);
+        }
+
+        return responseList;
+    }
 
     @Override
-    public BookResDTO getBookById(Long id) {
-        return bookStorage.stream()
-                .filter(book -> book.getId().equals(id))
-                .findFirst()
-                .orElse(null);
+    public BaseDTO getBookById(Long id) { // 상황에 따라 다른 DTO를 던져야 하므로 Object 혹은 공통 부모 타입 사용
+        // 1. DB에서 ID로 도서 찾기
+        Optional<Book> optionalBook = bookRepository.findById(id);
+
+        if (optionalBook.isPresent()) {
+            Book book = optionalBook.get();
+            return new BookResDTO(
+                    book.getId(),
+                    book.getTitle(),
+                    book.getAuthor(),
+                    book.getPrice(),
+                    book.getStatus(),
+                    book.getCreatedAt()
+            );
+        }
+        return new MessageResDTO("존재하지 않는 도서입니다.", LocalDateTime.now());
     }
 
     @Override
     public MessageResDTO updateBook(Long id, BookReqDTO reqDTO) {
-        BookResDTO book = getBookById(id);
+        Optional<Book> optionalBook = bookRepository.findById(id);
+        if(optionalBook.isPresent()){
+            Book book = optionalBook.get();
 
-        if (book != null) {
             book.setTitle(reqDTO.getTitle());
             book.setAuthor(reqDTO.getAuthor());
             book.setPrice(reqDTO.getPrice());
+            book.setStatus(reqDTO.getStatus());
 
-            System.out.println("도서 수정: id="+id);
+            bookRepository.save(book);
             return new MessageResDTO("도서 수정 완료", LocalDateTime.now());
         }
-
-        return new MessageResDTO("해당 도서를 찾을 수 없습니다.", LocalDateTime.now());
+        return new MessageResDTO("존재하지 않는 도서입니다.", LocalDateTime.now());
     }
 
     @Override
     public MessageResDTO deleteBook(Long id) {
-        boolean removed = bookStorage.removeIf(book -> book.getId().equals(id));
-
-        if (removed) {
-            System.out.println("도서 삭제: id="+id);
+        Optional<Book> optionalBook = bookRepository.findById(id);
+        if(optionalBook.isPresent()){
+            bookRepository.delete(optionalBook.get());
             return new MessageResDTO("도서 삭제 완료", LocalDateTime.now());
         }
-        return new MessageResDTO("삭제 실패: 도서가 없습니다.", LocalDateTime.now());
+        return new MessageResDTO("존재하지 않는 도서입니다.", LocalDateTime.now());
     }
 }

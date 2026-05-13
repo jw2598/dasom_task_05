@@ -1,10 +1,12 @@
 package com.dasom.dasom_tutoring_05.controller;
 
 
+import com.dasom.dasom_tutoring_05.dto.BaseDTO;
 import com.dasom.dasom_tutoring_05.dto.BookReqDTO;
 import com.dasom.dasom_tutoring_05.dto.BookResDTO;
 import com.dasom.dasom_tutoring_05.dto.MessageResDTO;
 import com.dasom.dasom_tutoring_05.service.BookService;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,8 +35,8 @@ public class BookController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<BookResDTO> findById(@PathVariable Long id) {
-        BookResDTO response = bookService.getBookById(id);
+    public ResponseEntity<BaseDTO> findById(@PathVariable Long id) {
+        BaseDTO response = bookService.getBookById(id);
         return ResponseEntity.ok(response);
     }
 

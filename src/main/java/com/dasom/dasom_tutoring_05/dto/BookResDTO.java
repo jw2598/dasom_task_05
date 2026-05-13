@@ -1,5 +1,7 @@
 package com.dasom.dasom_tutoring_05.dto;
 
+import com.dasom.dasom_tutoring_05.enums.BookStatus;
+
 import java.time.LocalDateTime;
 
 public class BookResDTO extends BaseDTO {
@@ -7,14 +9,16 @@ public class BookResDTO extends BaseDTO {
     private String title;
     private String author;
     private Integer price;
+    private BookStatus status;
 
 
-    public BookResDTO(Long id, LocalDateTime createdAt, String title, String author, Integer price) {
+    public BookResDTO(Long id,  String title, String author, Integer price, BookStatus status, LocalDateTime createdAt) {
         this.id = id;
-        this.createdAt = createdAt;
         this.title = title;
         this.author = author;
         this.price = price;
+        this.status = status;
+        this.createdAt = createdAt;
     }
 
     public Long getId() {
@@ -47,5 +51,13 @@ public class BookResDTO extends BaseDTO {
 
     public void setPrice(Integer price) {
         this.price = price;
+    }
+
+    public BookStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(BookStatus status) {
+        this.status = status;
     }
 }
